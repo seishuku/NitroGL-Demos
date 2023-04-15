@@ -1,0 +1,46 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+ATTRIB Vertex=fragment.texcoord[1];
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+PARAM L=program.local[0];
+
+PARAM ScaleFreq={ 0.0625, 0.125, 0.0625, 0.0625 };
+PARAM MortarColor={ 0.8, 0.8, 0.8 };
+PARAM BrickColor={ 0.8, 0.4, 0.1 };
+
+OUTPUT Output=result.color;
+
+TEMP r0, r1, r2, NdotL, Normal, Light, Brick;
+
+MOV Normal.x, TangentX.z;
+MOV Normal.y, TangentY.z;
+MOV Normal.z, TangentZ.z;
+
+MUL r0.xy, Vertex, ScaleFreq.xyxy;
+MUL r1.z, r0.y, 0.5;
+FRC r1.z, r1.z;
+SGE r1.z, 0.5, r1.z;
+MAD r0.x, r1.z, 0.5, r0.x;
+FRC r0.xy, r0;
+SGE r1.xy, ScaleFreq.zwzw, r0;
+SUB r2.xy, 1.0, ScaleFreq.zwzw;
+SGE r0.xy, r2, r0;
+SUB r0.xy, r1, r0;
+MUL r0.z, r0.x, r0.y;
+LRP Brick.xyz, r0.z, BrickColor, MortarColor;
+
+SUB Light, L, Vertex;
+DP3 Light.w, Light, Light;
+RSQ Light.w, Light.w;
+MUL Light, Light, Light.w;
+
+DP3 NdotL, Normal, Light;
+MAX NdotL, 0.0, NdotL;
+
+MUL Output, Brick, NdotL;
+
+END

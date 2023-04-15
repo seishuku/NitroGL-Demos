@@ -1,0 +1,36 @@
+!!ARBfp1.0
+
+#This program combines the orignal image with the blurred image
+
+ATTRIB Texture=fragment.texcoord[0];
+ATTRIB Texture1=fragment.texcoord[1];
+
+OUTPUT Color=result.color;
+
+#Weight between orignal and blur
+PARAM Weight={ 0.6 };
+
+#Gamma correction RGB values
+PARAM Gamma={ 0.45, 0.45, 0.45 };
+
+TEMP t0, t1;
+
+#Orignal image and blurred image
+TEX t0, Texture, texture[0], 2D;
+TEX t1, Texture1, texture[1], 2D;
+
+#Blend the two images together (could do this with a MUL and MAD, but I like one instruction)
+LRP t0, Weight.x, t0, t1;
+
+MUL t0, t0, 1.0;
+
+#Gamma correction
+POW t0.x, t0.x, Gamma.x;
+POW t0.y, t0.y, Gamma.y;
+POW t0.z, t0.z, Gamma.z;
+
+#Output it
+MOV Color, t0;
+MOV Color.a, 1.0;
+
+END

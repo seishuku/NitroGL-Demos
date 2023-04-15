@@ -1,0 +1,17 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+
+OUTPUT Color=result.color;
+
+PARAM Blend={ 0.5 };
+
+TEMP t0, t1, r0;
+
+TEX t0, Texture, texture[0], 2D;
+TEX t1, Texture, texture[1], 2D;
+
+SUB t1, t1, 0.5;
+MAD Color, t1, Blend.x, t0;
+
+END

@@ -1,0 +1,48 @@
+!!ARBfp1.0
+
+ATTRIB Color=fragment.color;
+ATTRIB NormalU=fragment.texcoord[0];
+ATTRIB ViewU=fragment.texcoord[1];
+
+OUTPUT Output=result.color;
+
+TEMP Normal, View, Reflect, Refract, Temp;
+
+// Renormalize
+DP3 Temp.x, NormalU, NormalU;
+RSQ Temp.w, Temp.x;
+MUL Normal, NormalU, Temp.w;
+MOV Normal.w, 1.0;
+
+// View direction
+DP3 Temp.x, ViewU, ViewU;
+RSQ Temp.w, Temp.x;
+MUL View, ViewU, Temp.w;
+
+// Reflection
+DP3 Temp.x, View, Normal;
+ADD Temp.w, Temp.x, Temp.x;
+MAD Reflect, Temp.w, Normal, -View;
+
+MOV Temp.w, 1.1;
+DP3 Temp.x, -View, Normal;
+MAD Temp.y, -Temp.x, Temp.x, 1.0;
+MUL Temp.z, Temp.w, Temp.w;
+MAD Temp.y, Temp.y, Temp.z, -1.0;
+RSQ Temp.y, Temp.y;
+RCP Temp.y, Temp.y;
+MAD Temp.x, Temp.w, Temp.x, Temp.y;
+MUL Temp.xyz, Normal, Temp.x;
+MAD Refract.xyz, Temp.w, -View, Temp;
+
+TEX Reflect, Reflect, texture[0], CUBE;
+TEX Refract, Refract, texture[0], CUBE;
+
+DP3 Temp.x, View, Normal;
+SUB Temp.w, 1.0, Temp.x;
+MUL Temp, Temp.w, Temp.w;
+
+MUL Refract, Refract, Color;
+LRP Output, Temp, Reflect, Refract;
+
+END

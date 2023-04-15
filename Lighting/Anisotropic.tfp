@@ -1,0 +1,124 @@
+!!ARBfp1.0
+
+# Anisotropic lighting via I=Ka+Base*(Kd*Falloff*(N.L))+(Ks*Gloss*Self*(sqrt(1-(L.T)^2)*sqrt(1-(V.T)^2)-(L.T)*(V.T))^n)
+
+# Input attributes
+
+# Texture coords
+ATTRIB Texture=fragment.texcoord[0];
+
+# Vertex coords
+ATTRIB Vertex=fragment.texcoord[1];
+
+# Tangent basis matrix (transpose)
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+# Output
+OUTPUT Color=result.color;
+
+# Light parameters
+PARAM Light=program.env[0];
+PARAM Kd=program.env[1];
+PARAM Ks=program.env[2];
+PARAM Ka=program.env[3];
+
+PARAM mvinvtrans[4]={ state.matrix.modelview.invtrans };
+PARAM Eye={ 0.0, 0.0, 0.0, 1.0 };
+
+PARAM Bias=program.local[0];
+
+TEMP Base, N, L, V, T, NdotL, RdotV, Falloff;
+
+TEX Base, Texture, texture[0], 2D;
+TEX N, Texture, texture[1], 2D;
+
+# Scale and bias normal to get signed (use L as a temp)
+MAD L, N, 2.0, -1.0;
+
+MOV L.z, 0.0;
+DP3 L.z, L, L;
+SUB L.z, 1.0, L.z;
+RSQ L.z, L.z;
+RCP L.z, L.z;
+
+# Make the tangent map by reversing XYZ -> ZYX (use V as a temp)
+MOV V, L.zyxw;
+
+# Transform it into object space (normal)
+DP3 N.x, TangentX, L;
+DP3 N.y, TangentY, L;
+DP3 N.z, TangentZ, L;
+
+# Normalize it
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+# Transform it into object space (tangent);
+DP3 T.x, TangentX, V;
+DP3 T.y, TangentY, V;
+DP3 T.z, TangentZ, V;
+
+# Normalize it
+DP3 T.w, T, T;
+RSQ T.w, T.w;
+MUL T, T, T.w;
+
+# Light to vertex direction
+SUB L, Light, Vertex;
+
+# D = L*(1/Radius)
+# Falloff = 1-D^2
+MUL Falloff, L, Light.w;
+DP3 Falloff, Falloff, Falloff;
+SUB_SAT Falloff, 1.0, Falloff;
+
+# Normalize it
+DP3 L.w, L, L;
+RSQ L.w, L.w;
+MUL L, L, L.w;
+
+# Get view direction
+DP4 V.x, mvinvtrans[0], Eye;
+DP4 V.y, mvinvtrans[1], Eye;
+DP4 V.z, mvinvtrans[2], Eye;
+DP4 V.w, mvinvtrans[3], Eye;
+
+# View to vertex direction and normalize it
+SUB V, V, Vertex;
+DP3 V.w, V, V;
+RSQ V.w, V.w;
+MUL V, V, V.w;
+
+# Specular = Ks*Gloss*(sqrt(1-(L.T)^2)*sqrt(1-(V.T)^2)-(L.T)*(V.T))^n
+DP3 RdotV.x, L, T;
+MUL RdotV.y, RdotV.x, RdotV.x;
+SUB RdotV.y, 1.0, RdotV.y;
+RSQ RdotV.y, RdotV.y;
+RCP RdotV.y, RdotV.y;
+DP3 RdotV.z, V, T;
+MUL RdotV.w, RdotV.z, RdotV.z;
+SUB RdotV.w, 1.0, RdotV.w;
+RSQ RdotV.w, RdotV.w;
+RCP RdotV.w, RdotV.w;
+MUL RdotV.x, RdotV.x, RdotV.z;
+MAD RdotV.x, RdotV.y, RdotV.w, -RdotV.x;
+MAX RdotV.x, 0.0, RdotV.x;
+POW RdotV, RdotV.x, Ks.a;
+MUL RdotV, Base.a, RdotV;
+
+# Diffuse = Ka+Kd*Falloff*Shadow*(N.L)
+DP3 NdotL, N, L;
+MAX NdotL, 0.0, NdotL;
+MUL NdotL, Falloff, NdotL;
+MUL RdotV, NdotL, RdotV;
+MUL NdotL, Kd, NdotL;
+
+ADD Base, Ka, Base;
+
+# I=Ka+Base*(Kd*Falloff*Shadow*(N.L))+(Ks*Gloss*Self*(sqrt(1-(L.T)^2)*sqrt(1-(V.T)^2)-(L.T)*(V.T))^n)
+MAD Color.rgb, Base, NdotL, RdotV;
+
+END

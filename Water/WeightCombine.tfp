@@ -1,0 +1,52 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+
+OUTPUT Color=result.color;
+
+PARAM BlurDist={ 0.5 };
+
+PARAM Texel=program.env[0];
+
+TEMP t0, t1, t2, t3, r0, r1;
+
+MUL t0.x, -Texel.x, 0.5;
+MOV t0.y, Texel.y;
+MUL t0.xy, BlurDist.x, t0;
+ADD t0.xy, t0, Texture;
+
+MOV t1.x, Texel.x;
+MUL t1.y, Texel.y, 0.5;
+MUL t1.xy, BlurDist.x, t1;
+ADD t1.xy, t1, Texture;
+
+MUL t2.x, Texel.x, 0.5;
+MOV t2.y, -Texel.y;
+MUL t2.xy, BlurDist.x, t2;
+ADD t2.xy, t2, Texture;
+
+MOV t3.x, -Texel.x;
+MUL t3.y, -Texel.y, 0.5;
+MUL t3.xy, BlurDist.x, t3;
+ADD t3.xy, t3, Texture;
+
+TEX t0, t0, texture[0], 2D;
+TEX t1, t1, texture[0], 2D;
+TEX t2, t2, texture[0], 2D;
+TEX t3, t3, texture[0], 2D;
+
+SUB t0, t0, 0.5;
+SUB t1, t1, 0.5;
+ADD r0, t0, t1;
+MUL r0, r0, 0.5;
+
+SUB t2, t2, 0.5;
+SUB t3, t3, 0.5;
+ADD r1, t2, t3;
+MUL r1, r1, 0.5;
+
+ADD r0, r0, r1;
+
+MAD Color, 0.5, r0, 0.5;
+
+END

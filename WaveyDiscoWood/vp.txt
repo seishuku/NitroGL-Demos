@@ -1,0 +1,75 @@
+!!ARBvp1.0
+
+ATTRIB iVertex=vertex.position;
+ATTRIB iColor=vertex.color;
+ATTRIB iTex0=vertex.texcoord[0];
+ATTRIB iNormal=vertex.normal;
+
+OUTPUT oVertex=result.position;
+OUTPUT oColor=result.color;
+OUTPUT oTex0=result.texcoord[0];
+
+PARAM mvp[4]={ state.matrix.mvp };
+
+PARAM Time=program.local[0];
+
+PARAM PI={ 4.0, 1.5708, 3.14159, 6.28319 };
+PARAM FixupCommon={ 0.98, 0.003, 0.5, 1.0 };
+PARAM sin={ 1.0, -0.16667, 0.00833, -0.0002 };
+PARAM cos={ 0.5, -0.04167, 0.00139, -0.00002 };
+PARAM WaveDirX={ 4.5, 4.5, 0.0, 0.5 };
+PARAM WaveDirY={ 4.5, 4.5, 0.0, 0.5 };
+PARAM WaveSpeed={ 1.0, 1.0, 1.0, 0.0 };
+PARAM WaveOffset={ 0.0, 0.0, 0.0, 0.0 };
+PARAM WaveHeights={ 8.0, 8.0, 8.0, 0.0 };
+
+TEMP r0, r1, r2, r3, r4, r5, r6, r7, r8;
+
+MOV oTex0, iTex0;
+
+MUL r0, WaveDirX, iTex0.x;
+MAD r0, WaveDirY, iTex0.y, r0;
+
+MAD r0, Time.x, WaveSpeed, r0;
+ADD r0, r0, WaveOffset;
+FRC r0.xy, r0;
+FRC r1.xy, r0.zwzw;
+MOV r0.zw, r1.xyxy;
+
+MUL r0, r0, FixupCommon.x;
+SUB r0, r0, FixupCommon.z;
+MUL r0, r0, PI.w;
+
+MUL r5, r0, r0;
+MUL r1, r5, r0;
+MUL r6, r1, r0;
+MUL r2, r6, r0;
+MUL r7, r2, r0;
+MUL r3, r7, r0;
+MUL r8, r3, r0;
+
+MAD r4, r1, sin.y, r0;
+MAD r4, r2, sin.z, r4;
+MAD r4, r3, sin.w, r4;
+
+MAD r5, r5, cos.x, FixupCommon.w;
+MAD r5, r6, cos.y, r5;
+MAD r5, r7, cos.z, r5;
+MAD r5, r8, cos.w, r5;
+
+DP4 r0, r4, WaveHeights;
+
+MUL r0.xyz, iNormal, r0;
+ADD r0.xyz, r0, iVertex;
+MOV r0.w, FixupCommon.w;
+
+DP4 oVertex.x, mvp[0], r0;
+DP4 oVertex.y, mvp[1], r0;
+DP4 oVertex.z, mvp[2], r0;
+DP4 oVertex.w, mvp[3], r0;
+
+DP3 r5.w, r5, r5;
+RSQ r5.w, r5.w;
+MUL oColor, r5, r5.w;
+
+END

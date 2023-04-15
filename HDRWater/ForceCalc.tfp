@@ -1,0 +1,54 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+
+OUTPUT Color=result.color;
+
+PARAM EqRestore={ 0.5 };
+PARAM Dist={ 1.5 };
+
+PARAM Texel=program.env[0];
+
+TEMP t0, t1, t2, t3, t4, r0, r1;
+
+MUL t1.x, -Dist.x, Texel.x;
+MUL t1.y, Dist.x, Texel.y;
+ADD t1.xy, t1, Texture;
+
+MUL t2.x, Dist.x, Texel.x;
+MUL t2.y, Dist.x, Texel.y;
+ADD t2.xy, t2, Texture;
+
+MUL t3.x, Dist.x, Texel.x;
+MUL t3.y, -Dist.x, Texel.y;
+ADD t3.xy, t3, Texture;
+
+MUL t4.x, -Dist.x, Texel.x;
+MUL t4.y, -Dist.x, Texel.y;
+ADD t4.xy, t4, Texture;
+
+TEX t0, Texture, texture[0], 2D;
+TEX t1, t1, texture[0], 2D;
+TEX t2, t2, texture[0], 2D;
+TEX t3, t3, texture[0], 2D;
+TEX t4, t4, texture[0], 2D;
+
+SUB r0, t1, t0;
+SUB r1, t2, t0;
+
+ADD r0, r0, r1;
+
+SUB r1, t3, t0;
+
+ADD r0, r0, r1;
+
+SUB r1, 0.5, t0;
+
+MAD r0, r1, EqRestore.x, r0;
+
+ADD r1, r0, 0.5;
+
+SUB r0, t4, t0;
+ADD Color, r0, r1;
+
+END

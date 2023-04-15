@@ -1,0 +1,81 @@
+!!ARBfp1.0
+
+#Texture coord
+ATTRIB Texture=fragment.texcoord[0];
+
+#Vertex
+ATTRIB Vertex=fragment.texcoord[1];
+
+#Tangent matrix (transpose)
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+OUTPUT Color=result.color;
+
+PARAM mvinvtrans[4]={ state.matrix.modelview.invtrans };
+PARAM Eye={ 0.0, 0.0, 0.0, 1.0 };
+
+#Refraction index
+PARAM eta={ 1.1 };
+
+TEMP N, V, R, F, Rf;
+
+#Sample the normal map
+TEX N, Texture, texture[0], 2D;
+
+#Expand the normal ([0, 1] -> [-1, 1])
+MAD V, N, 2.0, -1.0;
+
+#Transform from tangent space to object space
+DP3 N.x, TangentX, V;
+DP3 N.y, TangentY, V;
+DP3 N.z, TangentZ, V;
+
+#Normalized it
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+#Eye vector
+DP4 V.x, mvinvtrans[0], Eye;
+DP4 V.y, mvinvtrans[1], Eye;
+DP4 V.z, mvinvtrans[2], Eye;
+DP4 V.w, mvinvtrans[3], Eye;
+
+#Normalized Eye to Vertex direction
+SUB V, V, Vertex;
+DP3 V.w, V, V;
+RSQ V.w, V.w;
+MUL V, V, V.w;
+
+#Reflection and Fresnel calculation
+DP3 R.x, V, N;
+SUB F, 1.0, R.x;
+MUL F, F, F;
+ADD R.x, R.x, R.x;
+MAD R, R.x, N, -V;
+
+#Refraction calculation
+DP3 Rf.x, -V, N;
+MAD Rf.y, -Rf.x, Rf.x, 1.0;
+MUL Rf.z, eta.x, eta.x;
+MAD Rf.y, Rf.y, Rf.z, -1.0;
+RSQ Rf.y, Rf.y;
+RCP Rf.y, Rf.y;
+MAD Rf.x, eta.x, Rf.x, Rf.y;
+MUL Rf, N, Rf.x;
+MAD Rf, eta.x, -V, Rf;
+
+#Sample reflection and refraction
+TEX R, R, texture[1], CUBE;
+TEX Rf, Rf, texture[1], CUBE;
+
+#Scale the reflection to get some HDR scale back
+#MUL R, R, 6.0;
+
+#Output=Fresnel*Reflection+Refraction
+MAD Color, F, R, Rf;
+MOV Color.a, 1.0;
+
+END

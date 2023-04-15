@@ -1,0 +1,75 @@
+!!ARBfp1.0
+
+# Diffuse lighting via I=Base*Kd*Falloff*(N.L)
+
+# Input attributes
+
+# Texture coords
+ATTRIB Texure=fragment.texcoord[0];
+
+# Vertex coords
+ATTRIB Vertex=fragment.texcoord[1];
+
+# Tangent basis matrix (transpose)
+ATTRIB Tangent0=fragment.texcoord[2];
+ATTRIB Tangent1=fragment.texcoord[3];
+ATTRIB Tangent2=fragment.texcoord[4];
+
+# Output
+OUTPUT Color=result.color;
+
+# Light parameters
+PARAM Light=program.env[0];
+PARAM Kd=program.env[1];
+PARAM Ka=program.env[3];
+
+TEMP Base, N, L, NdotL, Falloff;
+
+TEX Base, Texure, texture[0], 2D;
+TEX N, Texure, texture[1], 2D;
+
+# Scale and bias normal to get signed
+MAD L, N, 2.0, -1.0;
+
+MOV L.z, 0.0;
+DP3 L.z, L, L;
+SUB L.z, 1.0, L.z;
+RSQ L.z, L.z;
+RCP L.z, L.z;
+
+# Transform it into object space
+DP3 N.x, Tangent0, L;
+DP3 N.y, Tangent1, L;
+DP3 N.z, Tangent2, L;
+
+# Normalize N
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+# Light to vertex direction
+SUB L, Light, Vertex;
+
+# D = L*(1/Radius)
+# Falloff = 1-D^2
+MUL Falloff, L, Light.w;
+DP3 Falloff, Falloff, Falloff;
+SUB_SAT Falloff, 1.0, Falloff;
+
+# Normalize L
+DP3 L.w, L, L;
+RSQ L.w, L.w;
+MUL L, L, L.w;
+
+# Diffuse = Kd*Falloff*(N.L)
+DP3 NdotL, N, L;
+MAX NdotL, 0.0, NdotL;
+MUL NdotL, Falloff, NdotL;
+MUL NdotL, Kd, NdotL;
+
+ADD Base, Ka, Base;
+
+# I=Ka+Base*Kd*Falloff*(N.L)
+MUL Color.rgb, Base, NdotL;
+
+END

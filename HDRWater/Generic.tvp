@@ -1,0 +1,31 @@
+!!ARBvp1.0
+
+PARAM mvp[4]={ state.matrix.mvp };
+PARAM Scale={ 1.0 };
+
+MOV result.color, vertex.color;
+
+MOV result.texcoord[0], vertex.texcoord[0];
+
+DP4 result.position.x, mvp[0], vertex.position;
+DP4 result.position.y, mvp[1], vertex.position;
+DP4 result.position.z, mvp[2], vertex.position;
+DP4 result.position.w, mvp[3], vertex.position;
+
+MOV result.texcoord[1], vertex.position;
+
+MUL result.texcoord[2].x, vertex.texcoord[1].x, Scale.x;
+MUL result.texcoord[2].y, vertex.texcoord[2].x, Scale.x;
+MOV result.texcoord[2].z, vertex.normal.x;
+
+MUL result.texcoord[3].x, vertex.texcoord[1].y, Scale.x;
+MUL result.texcoord[3].y, vertex.texcoord[2].y, Scale.x;
+MOV result.texcoord[3].z, vertex.normal.y;
+
+MUL result.texcoord[4].x, vertex.texcoord[1].z, Scale.x;
+MUL result.texcoord[4].y, vertex.texcoord[2].z, Scale.x;
+MOV result.texcoord[4].z, vertex.normal.z;
+
+MOV result.texcoord[5], vertex.normal;
+
+END

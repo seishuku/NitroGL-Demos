@@ -1,0 +1,33 @@
+!!ARBfp1.0
+
+ATTRIB NormalU=fragment.texcoord[0];
+
+OUTPUT Output=result.color;
+
+PARAM Matrix[12]={ program.env[0..11] };
+
+TEMP Normal, Temp;
+
+// Renormalize
+DP3 Temp.x, NormalU, NormalU;
+RSQ Temp.w, Temp.x;
+MUL Normal, NormalU, Temp.w;
+MOV Normal.w, 1.0;
+
+DP4 Temp.x, Matrix[ 0], Normal;
+DP4 Temp.y, Matrix[ 1], Normal;
+DP4 Temp.z, Matrix[ 2], Normal;
+DP4 Temp.w, Matrix[ 3], Normal;
+DP4 Output.x, Normal, Temp;
+DP4 Temp.x, Matrix[ 4], Normal;
+DP4 Temp.y, Matrix[ 5], Normal;
+DP4 Temp.z, Matrix[ 6], Normal;
+DP4 Temp.w, Matrix[ 7], Normal;
+DP4 Output.y, Normal, Temp;
+DP4 Temp.x, Matrix[ 8], Normal;
+DP4 Temp.y, Matrix[ 9], Normal;
+DP4 Temp.z, Matrix[10], Normal;
+DP4 Temp.w, Matrix[11], Normal;
+DP4 Output.z, Normal, Temp;
+
+END

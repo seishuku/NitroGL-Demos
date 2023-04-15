@@ -1,0 +1,51 @@
+!!ARBfp1.0
+
+OPTION ATI_draw_buffers;
+
+ATTRIB TexCoord=fragment.texcoord[0];
+ATTRIB Vertex=fragment.texcoord[1];
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+// View vector
+OUTPUT Output0=result.color[0];
+
+// Normal vector
+OUTPUT Output1=result.color[1];
+
+// Color Textures
+OUTPUT Output2=result.color[2];
+
+PARAM mvinv[4]={ state.matrix.modelview.inverse };
+
+TEMP Normal, View, Reflect, Color2D, ColorCUBE, Temp;
+
+// Normal
+TEX Temp, TexCoord, texture[1], 2D;
+
+MAD Temp, 2.0, Temp, -1.0;
+
+DP3 Normal.x, TangentX, Temp;
+DP3 Normal.y, TangentY, Temp;
+DP3 Normal.z, TangentZ, Temp;
+
+DP3 Normal.w, Normal, Normal;
+RSQ Normal.w, Normal.w;
+MUL Output1, Normal, Normal.w;
+MOV Output1.w, 1.0;
+
+// View
+SUB View, mvinv[3], Vertex;
+DP3 View.w, View, View;
+RSQ View.w, View.w;
+MUL Output0, View, View.w;
+
+// Lame hack to get two different texture targets
+TEX Color2D, TexCoord, texture[0], 2D;
+TEX ColorCUBE, TexCoord, texture[2], CUBE;
+
+ADD Output2, Color2D, ColorCUBE;
+MOV Output2.w, fragment.color.w;
+
+END

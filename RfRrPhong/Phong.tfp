@@ -1,0 +1,102 @@
+!!ARBfp1.0
+
+# Phong lighting via I=Ka+Base*(Kd*Falloff*(N.L))+(Ks*Gloss*(R.L)^n)
+
+# Input attributes
+
+# Texture coords
+ATTRIB Texure=fragment.texcoord[0];
+
+# Vertex coords
+ATTRIB Vertex=fragment.texcoord[1];
+
+# Tangent basis matrix (transpose)
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+# Output
+OUTPUT Color=result.color;
+
+# Light parameters
+PARAM Light=program.env[0];
+PARAM Kd=program.env[1];
+PARAM Ks=program.env[2];
+PARAM Ka=program.env[3];
+
+PARAM mvinvtrans[4]={ state.matrix.modelview.invtrans };
+PARAM Eye={ 0.0, 0.0, 0.0, 1.0 };
+
+TEMP Base, N, L, R, V, NdotL, RdotL, Falloff, temp;
+
+TEX Base, Texure, texture[0], 2D;
+TEX N, Texure, texture[1], 2D;
+
+# Scale and bias normal to get signed
+MAD temp, N, 2.0, -1.0;
+
+# Transform it into object space
+DP3 N.x, TangentX, temp;
+DP3 N.y, TangentY, temp;
+DP3 N.z, TangentZ, temp;
+
+# Renormalize it
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+# Light to vertex direction
+SUB L, Light, Vertex;
+
+# D = L*(1/Radius)
+# Falloff = 1-D^2
+MUL Falloff, L, Light.w;
+DP3 Falloff, Falloff, Falloff;
+SUB_SAT Falloff, 1.0, Falloff;
+
+# Normalize it
+DP3 L.w, L, L;
+RSQ L.w, L.w;
+MUL L, L, L.w;
+
+# Get view direction
+DP4 V.x, mvinvtrans[0], Eye;
+DP4 V.y, mvinvtrans[1], Eye;
+DP4 V.z, mvinvtrans[2], Eye;
+DP4 V.w, mvinvtrans[3], Eye;
+
+# View to vertex direction and normalize it
+SUB V, V, Vertex;
+DP3 V.w, V, V;
+RSQ V.w, V.w;
+MUL V, V, V.w;
+
+# Reflection = 2.0*(N.V)*N-V
+DP3 R, N, V;
+ADD R, R, R;
+MAD R, R, N, -V;
+
+# Normalize it
+DP3 R.w, R, R;
+RSQ R.w, R.w;
+MUL R, R, R.w;
+
+# Specular = Ks*Gloss*(R.L)^n
+DP3_SAT RdotL, R, L;
+POW RdotL, RdotL.x, Ks.w;
+MUL RdotL, Base.a, RdotL;
+MUL RdotL, Ks, RdotL;
+
+# Diffuse = Kd*Falloff*(N.L)
+DP3_SAT NdotL, N, L;
+MUL NdotL, Falloff, NdotL;
+MUL RdotL, NdotL, RdotL;
+MUL NdotL, Kd, NdotL;
+
+# Base = Ka+Base
+ADD Base, Ka, Base;
+
+# I=Ka+Base*(Kd*Falloff*(N.L))+(Ks*Gloss*(R.L)^n)
+MAD Color.rgb, Base, NdotL, RdotL;
+
+END

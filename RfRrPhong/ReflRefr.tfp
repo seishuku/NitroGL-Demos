@@ -1,0 +1,111 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+ATTRIB Vertex=fragment.texcoord[1];
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+OUTPUT Color=result.color;
+
+PARAM mvinvtrans[4]={ state.matrix.modelview.invtrans };
+PARAM Eye={ 0.0, 0.0, 0.0, 1.0 };
+
+PARAM eta=program.env[0];
+
+TEMP Base, N, V, Rl, Rr, Rr0, Rr1, Rr2, F;
+
+TEX Base, Texture, texture[0], 2D;
+TEX N, Texture, texture[1], 2D;
+
+# Scale and Bias the normal
+MAD F, N, 2.0, -1.0;
+
+# Transform the normal into object space
+DP3 N.x, TangentX, F;
+DP3 N.y, TangentY, F;
+DP3 N.z, TangentZ, F;
+
+# Normalize it
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+# View direction (yeah, I know, this could be done on the CPU)
+DP4 V.x, mvinvtrans[0], Eye;
+DP4 V.y, mvinvtrans[1], Eye;
+DP4 V.z, mvinvtrans[2], Eye;
+DP4 V.w, mvinvtrans[3], Eye;
+
+# Vertex View direction
+SUB V, V, Vertex;
+
+# Normalize it
+DP3 V.w, V, V;
+RSQ V.w, V.w;
+MUL V, V, V.w;
+
+# Reflection and Fresnel term
+# Rl = 2.0*(V.N)*N-V
+# F = 1.0-(V.N)
+DP3 Rl.x, V, N;
+SUB_SAT F, 1.0, Rl.x;
+ADD Rl.x, Rl.x, Rl.x;
+MAD Rl, Rl.x, N, -V;
+
+# Three (ugh) refraction calculations for chromatic aberration
+
+# Refraction
+# Rr = eta*E-(eta*(N.-V)+sqrt(1.0-eta^2*(1-(N.-V)^2)))*N
+
+# First wavelength
+DP3 Rr.x, N, -V;
+MAD Rr.y, -Rr.x, Rr.x, 1.0;
+MUL Rr.z, eta.x, eta.x;
+MAD Rr.y, Rr.y, Rr.z, -1.0;
+RSQ Rr.y, Rr.y;
+RCP Rr.y, Rr.y;
+MAD Rr.x, eta.x, Rr.x, Rr.y;
+MUL Rr, N, Rr.x;
+MAD Rr0, eta.x, -V, Rr;
+
+# Second wavelength
+DP3 Rr.x, N, -V;
+MAD Rr.y, -Rr.x, Rr.x, 1.0;
+MUL Rr.z, eta.y, eta.y;
+MAD Rr.y, Rr.y, Rr.z, -1.0;
+RSQ Rr.y, Rr.y;
+RCP Rr.y, Rr.y;
+MAD Rr.x, eta.y, Rr.x, Rr.y;
+MUL Rr, N, Rr.x;
+MAD Rr1, eta.y, -V, Rr;
+
+# Thrid wavelength
+DP3 Rr.x, N, -V;
+MAD Rr.y, -Rr.x, Rr.x, 1.0;
+MUL Rr.z, eta.z, eta.z;
+MAD Rr.y, Rr.y, Rr.z, -1.0;
+RSQ Rr.y, Rr.y;
+RCP Rr.y, Rr.y;
+MAD Rr.x, eta.z, Rr.x, Rr.y;
+MUL Rr, N, Rr.x;
+MAD Rr2, eta.z, -V, Rr;
+
+# Look up the reflection and refractions from the SAME texture, cool eh?
+TEX Rl, Rl, texture[2], CUBE;
+TEX Rr0, Rr0, texture[2], CUBE;
+TEX Rr1, Rr1, texture[2], CUBE;
+TEX Rr2, Rr2, texture[2], CUBE;
+
+# Multiply the reflection by the fresnel term
+MUL Rl, F, Rl;
+
+# Combine the refractions
+MOV Rr.r, Rr0.r;
+MOV Rr.g, Rr1.g;
+MOV Rr.b, Rr2.b;
+
+# Add the reflection and refraction, output it as the final color
+ADD Color.rgb, Rl, Rr;
+
+END

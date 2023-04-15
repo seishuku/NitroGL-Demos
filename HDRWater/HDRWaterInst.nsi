@@ -1,0 +1,146 @@
+!define MUI_PRODUCT "HDR Procedural Water"
+!define MUI_VERSION ""
+
+!include "${NSISDIR}\Contrib\Modern UI\System.nsh"
+
+!define MUI_LICENSEPAGE
+!define MUI_COMPONENTSPAGE
+!define MUI_DIRECTORYPAGE
+!define MUI_STARTMENUPAGE
+
+!define MUI_ABORTWARNING
+
+!define MUI_UNINSTALLER
+!define MUI_UNCONFIRMPAGE
+
+!define TEMP1 $R0
+
+!insertmacro MUI_LANGUAGE "English"
+
+OutFile "HDRWaterInst.exe"
+
+LicenseData "License.txt"
+
+LangString DESC_SecCopyUI ${LANG_ENGLISH} "The main program and data files."
+LangString DESC_SecSourceCopyUI ${LANG_ENGLISH} "The program source code (with out EXE and data files)."
+
+InstallDir "$PROGRAMFILES\${MUI_PRODUCT}"
+
+!insertmacro MUI_SYSTEM
+
+Section "Program" SecCopyUI
+  SetOutPath "$INSTDIR"
+
+  File "ApplyForce.tfp"
+  File "ApplyVelocity.tfp"
+  File "Combine.tfp"
+  File "Engine.exe"
+  File "Font.tga"
+  File "ForceCalc.tfp"
+  File "GaussianBlurX.tfp"
+  File "GaussianBlurY.tfp"
+  File "Generic.tvp"
+  File "GraceCubemap.float"
+  File "NormalMap.tfp"
+  File "Readme.txt"
+  File "Reflect.tfp"
+  File "sphere.3ds"
+  File "Spinner.tga"
+  File "Swimmer.tga"
+  File "WeightCombine.tfp"
+
+  !insertmacro MUI_STARTMENU_WRITE_BEGIN
+    CreateDirectory "$SMPROGRAMS\${MUI_STARTMENU_VARIABLE}"
+    CreateShortCut "$SMPROGRAMS\${MUI_STARTMENU_VARIABLE}\HDR Procedural Water.lnk" "$INSTDIR\Engine.exe"
+    CreateShortCut "$SMPROGRAMS\${MUI_STARTMENU_VARIABLE}\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+
+    WriteRegStr HKCU "Software\${MUI_PRODUCT}" "Start Menu Folder" "${MUI_STARTMENU_VARIABLE}"
+  !insertmacro MUI_STARTMENU_WRITE_END
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+SectionEnd
+
+Section "Source code" SecSourceCopyUI
+  SetOutPath "$INSTDIR"
+
+  File "3ds.c"
+  File "3ds.h"
+  File "dds.c"
+  File "Engine.c"
+  File "Engine.dsp"
+  File "Engine.dsw"
+  File "font.c"
+  File "font.h"
+  File "glati.h"
+  File "image.c"
+  File "image.h"
+  File "jpeg.c"
+  File "overlay.c"
+  File "overlay.h"
+  File "quat.c"
+  File "quat.h"
+  File "tga.c"
+  File "wglati.h"
+
+  WriteUninstaller "$INSTDIR\Uninstall.exe"
+SectionEnd
+
+!insertmacro MUI_SECTIONS_FINISHHEADER
+
+!insertmacro MUI_FUNCTIONS_DESCRIPTION_BEGIN
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecCopyUI} $(DESC_SecCopyUI)
+  !insertmacro MUI_DESCRIPTION_TEXT ${SecSourceCopyUI} $(DESC_SecSourceCopyUI)
+!insertmacro MUI_FUNCTIONS_DESCRIPTION_END
+
+Section "Uninstall"
+  Delete "$INSTDIR\3ds.c"
+  Delete "$INSTDIR\3ds.h"
+  Delete "$INSTDIR\ApplyForce.tfp"
+  Delete "$INSTDIR\ApplyVelocity.tfp"
+  Delete "$INSTDIR\Combine.tfp"
+  Delete "$INSTDIR\dds.c"
+  Delete "$INSTDIR\Engine.c"
+  Delete "$INSTDIR\Engine.dsp"
+  Delete "$INSTDIR\Engine.dsw"
+  Delete "$INSTDIR\Engine.exe"
+  Delete "$INSTDIR\font.c"
+  Delete "$INSTDIR\font.h"
+  Delete "$INSTDIR\Font.tga"
+  Delete "$INSTDIR\ForceCalc.tfp"
+  Delete "$INSTDIR\GaussianBlurX.tfp"
+  Delete "$INSTDIR\GaussianBlurY.tfp"
+  Delete "$INSTDIR\Generic.tvp"
+  Delete "$INSTDIR\glati.h"
+  Delete "$INSTDIR\GraceCubemap.float"
+  Delete "$INSTDIR\image.c"
+  Delete "$INSTDIR\image.h"
+  Delete "$INSTDIR\jpeg.c"
+  Delete "$INSTDIR\NormalMap.tfp"
+  Delete "$INSTDIR\overlay.c"
+  Delete "$INSTDIR\overlay.h"
+  Delete "$INSTDIR\quat.c"
+  Delete "$INSTDIR\quat.h"
+  Delete "$INSTDIR\Readme.txt"
+  Delete "$INSTDIR\Reflect.tfp"
+  Delete "$INSTDIR\sphere.3ds"
+  Delete "$INSTDIR\Spinner.tga"
+  Delete "$INSTDIR\Swimmer.tga"
+  Delete "$INSTDIR\tga.c"
+  Delete "$INSTDIR\WeightCombine.tfp"
+  Delete "$INSTDIR\wglati.h"
+  Delete "$INSTDIR\Uninstall.exe"
+
+  ReadRegStr ${TEMP1} HKCU "Software\${MUI_PRODUCT}" "Start Menu Folder"
+
+  StrCmp ${TEMP1} "" noshortcuts
+    Delete "$SMPROGRAMS\${TEMP1}\HDR Procedural Water.lnk"
+    Delete "$SMPROGRAMS\${TEMP1}\Uninstall.lnk"
+    RMDir "$SMPROGRAMS\${TEMP1}"
+
+noshortcuts:
+  RMDir "$INSTDIR"
+
+  DeleteRegValue HKCU "Software\${MUI_PRODUCT}" "Start Menu Folder"
+
+  !insertmacro MUI_UNFINISHHEADER
+SectionEnd

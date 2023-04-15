@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Tremor">
+      <UniqueIdentifier>{f83de1c1-dc22-4057-8daa-459ee74da1e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{6b3d7d53-b04c-462b-9d9a-d434c9382835}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="3ds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="dds.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="font.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Game.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="image.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="index.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="math.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="opengl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="overlay.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tga.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\bitwise.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\block.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\codebook.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\floor0.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\floor1.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\framing.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\info.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\mapping0.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\mdct.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\registry.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\res012.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\sharedbook.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\synthesis.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\vorbisfile.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+    <ClCompile Include="Tremor\window.c">
+      <Filter>Tremor</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="3ds.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="index.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ivorbiscodec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ivorbisfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ogg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="opengl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="os_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="overlay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Blur.tfp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Composite.tfp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Diffuse.tfp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Lighting.tfp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Reflect.tfp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Generic.tvp">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>

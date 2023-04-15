@@ -1,0 +1,44 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+
+OUTPUT Color=result.color;
+
+PARAM Texel=program.env[0];
+
+PARAM Scale={ 4.0, 4.0, 1.0, 0.0 };
+
+TEMP t0, t1, t2, v0, v1, N;
+
+MOV t1.x, Texel.x;
+MOV t1.y, 0.0;
+ADD t1, t1, Texture;
+
+MOV t2.x, 0.0;
+MOV t2.y, Texel.y;
+ADD t2, t2, Texture;
+
+TEX t0, Texture, texture[0], 2D;
+TEX t1, t1, texture[0], 2D;
+TEX t2, t2, texture[0], 2D;
+
+MOV v0.x, 2.0;
+MOV v0.y, 0.0;
+SUB v0.z, t0, t1;
+MOV v0.z, -v0.z;
+
+MOV v1.x, 0.0;
+MOV v1.y, 2.0;
+SUB v1.z, t0, t2;
+
+XPD N, v0, v1;
+
+MUL N, N, Scale;
+
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+MAD Color, N, 0.5, 0.5;
+
+END

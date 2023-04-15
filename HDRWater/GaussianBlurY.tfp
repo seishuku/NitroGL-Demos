@@ -1,0 +1,63 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+
+OUTPUT Color=result.color;
+
+PARAM Texel=program.env[0];
+
+PARAM Offsets0={ 1.3366, 3.4295, 5.4264 };
+PARAM Offsets1={ 7.4359, 9.4436, 11.4401 };
+
+PARAM Weights0={ 0.2013, 0.2185, 0.0821, 0.0461 };
+PARAM Weights1={ 0.0262, 0.0162, 0.0102 };
+
+TEMP t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12;
+
+#Create 13 offsets for Y axis only
+MOV t0, Texel.zyzz;
+MAD t1, t0, Offsets0.x, Texture;
+MAD t2, t0, -Offsets0.x, Texture;
+MAD t3, t0, Offsets0.y, Texture;
+MAD t4, t0, -Offsets0.y, Texture;
+MAD t5, t0, Offsets0.z, Texture;
+MAD t6, t0, -Offsets0.z, Texture;
+MAD t7, t0, Offsets1.x, Texture;
+MAD t8, t0, -Offsets1.x, Texture;
+MAD t9, t0, Offsets1.y, Texture;
+MAD t10, t0, -Offsets1.y, Texture;
+MAD t11, t0, Offsets1.z, Texture;
+MAD t12, t0, -Offsets1.z, Texture;
+
+#Sample the texture from the 13 offsets
+TEX t0, Texture, texture[0], 2D;
+TEX t1, t1, texture[0], 2D;
+TEX t2, t2, texture[0], 2D;
+TEX t3, t3, texture[0], 2D;
+TEX t4, t4, texture[0], 2D;
+TEX t5, t5, texture[0], 2D;
+TEX t6, t6, texture[0], 2D;
+TEX t7, t7, texture[0], 2D;
+TEX t8, t8, texture[0], 2D;
+TEX t9, t9, texture[0], 2D;
+TEX t10, t10, texture[0], 2D;
+TEX t11, t11, texture[0], 2D;
+TEX t12, t12, texture[0], 2D;
+
+#Accululate the 13 samples and output
+MUL t0, t0, Weights0.x;
+MAD t0, t1, Weights0.y, t0;
+MAD t0, t2, Weights0.y, t0;
+MAD t0, t3, Weights0.z, t0;
+MAD t0, t4, Weights0.z, t0;
+MAD t0, t5, Weights0.w, t0;
+MAD t0, t6, Weights0.w, t0;
+MAD t0, t7, Weights1.x, t0;
+MAD t0, t8, Weights1.x, t0;
+MAD t0, t9, Weights1.y, t0;
+MAD t0, t10, Weights1.y, t0;
+MAD t0, t11, Weights1.z, t0;
+MAD Color, t12, Weights1.z, t0;
+MOV Color.a, 1.0;
+
+END

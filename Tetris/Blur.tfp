@@ -1,0 +1,104 @@
+!!ARBfp1.0
+
+OUTPUT Output=result.color;
+
+PARAM Coord=program.env[0];
+PARAM Direction=program.local[0];
+
+PARAM Offset[3]=
+{
+	{  1.45,  3.45,  5.45,  7.45 },
+	{  9.45, 11.45, 13.45, 15.45 },
+	{ 17.45, 19.45, 21.45 }
+};
+
+PARAM Weight[3]=
+{
+	{ 0.182008, 0.116053, 0.073999, 0.047184 },
+	{ 0.030086, 0.019183, 0.012232, 0.007799 },
+	{ 0.004973, 0.003171, 0.002022, 0.001289 }
+};
+
+TEMP TexCoord, s0;
+TEMP r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10;
+
+MUL TexCoord, fragment.position, Coord;
+
+MAD r0,  Direction, -Offset[2].z, TexCoord;
+MAD r1,  Direction, -Offset[2].y, TexCoord;
+MAD r2,  Direction, -Offset[2].x, TexCoord;
+MAD r3,  Direction, -Offset[1].w, TexCoord;
+MAD r4,  Direction, -Offset[1].z, TexCoord;
+MAD r5,  Direction, -Offset[1].y, TexCoord;
+MAD r6,  Direction, -Offset[1].x, TexCoord;
+MAD r7,  Direction, -Offset[0].w, TexCoord;
+MAD r8,  Direction, -Offset[0].z, TexCoord;
+MAD r9,  Direction, -Offset[0].y, TexCoord;
+MAD r10, Direction, -Offset[0].x, TexCoord;
+
+TEX r0,  r0,  texture[0], 2D;
+TEX r1,  r1,  texture[0], 2D;
+TEX r2,  r2,  texture[0], 2D;
+TEX r3,  r3,  texture[0], 2D;
+TEX r4,  r4,  texture[0], 2D;
+TEX r5,  r5,  texture[0], 2D;
+TEX r6,  r6,  texture[0], 2D;
+TEX r7,  r7,  texture[0], 2D;
+TEX r8,  r8,  texture[0], 2D;
+TEX r9,  r9,  texture[0], 2D;
+TEX r10, r10, texture[0], 2D;
+
+TEX s0,  TexCoord,  texture[0], 2D;
+
+MUL s0, s0,  Weight[0].x;
+MAD s0, r0,  Weight[2].w, s0;
+MAD s0, r1,  Weight[2].z, s0;
+MAD s0, r2,  Weight[2].y, s0;
+MAD s0, r3,  Weight[2].x, s0;
+MAD s0, r4,  Weight[1].w, s0;
+MAD s0, r5,  Weight[1].z, s0;
+MAD s0, r6,  Weight[1].y, s0;
+MAD s0, r7,  Weight[1].x, s0;
+MAD s0, r8,  Weight[0].w, s0;
+MAD s0, r9,  Weight[0].z, s0;
+MAD s0, r10, Weight[0].y, s0;
+
+MAD r0,  Direction, Offset[0].x, TexCoord;
+MAD r1,  Direction, Offset[0].y, TexCoord;
+MAD r2,  Direction, Offset[0].z, TexCoord;
+MAD r3,  Direction, Offset[0].w, TexCoord;
+MAD r4,  Direction, Offset[1].x, TexCoord;
+MAD r5,  Direction, Offset[1].y, TexCoord;
+MAD r6,  Direction, Offset[1].z, TexCoord;
+MAD r7,  Direction, Offset[1].w, TexCoord;
+MAD r8,  Direction, Offset[2].x, TexCoord;
+MAD r9,  Direction, Offset[2].y, TexCoord;
+MAD r10, Direction, Offset[2].z, TexCoord;
+
+TEX r0,  r0,  texture[0], 2D;
+TEX r1,  r1,  texture[0], 2D;
+TEX r2,  r2,  texture[0], 2D;
+TEX r3,  r3,  texture[0], 2D;
+TEX r4,  r4,  texture[0], 2D;
+TEX r5,  r5,  texture[0], 2D;
+TEX r6,  r6,  texture[0], 2D;
+TEX r7,  r7,  texture[0], 2D;
+TEX r8,  r8,  texture[0], 2D;
+TEX r9,  r9,  texture[0], 2D;
+TEX r10, r10, texture[0], 2D;
+
+MAD s0, r0,  Weight[0].x, s0;
+MAD s0, r1,  Weight[0].y, s0;
+MAD s0, r2,  Weight[0].z, s0;
+MAD s0, r3,  Weight[0].w, s0;
+MAD s0, r4,  Weight[1].x, s0;
+MAD s0, r5,  Weight[1].y, s0;
+MAD s0, r6,  Weight[1].z, s0;
+MAD s0, r7,  Weight[1].w, s0;
+MAD s0, r8,  Weight[2].x, s0;
+MAD s0, r9,  Weight[2].y, s0;
+MAD s0, r10, Weight[2].z, s0;
+
+MOV Output, s0;
+
+END

@@ -1,0 +1,50 @@
+!!ARBfp1.0
+
+ATTRIB Texture=fragment.texcoord[0];
+ATTRIB Vertex=fragment.texcoord[1];
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+OUTPUT Color=result.color;
+
+PARAM mvinvtrans[4]={ state.matrix.modelview.invtrans };
+PARAM Eye={ 0.0, 0.0, 0.0, 1.0 };
+
+TEMP N, V, R, F, D;
+
+TEX N, Texture, texture[0], 2D;
+
+MAD V, N, 2.0, -1.0;
+
+DP3 N.x, TangentX, V;
+DP3 N.y, TangentY, V;
+DP3 N.z, TangentZ, V;
+
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+DP4 V.x, mvinvtrans[0], Eye;
+DP4 V.y, mvinvtrans[1], Eye;
+DP4 V.z, mvinvtrans[2], Eye;
+DP4 V.w, mvinvtrans[3], Eye;
+
+SUB V, V, Vertex;
+
+DP3 V.w, V, V;
+RSQ V.w, V.w;
+MUL V, V, V.w;
+
+DP3 R.x, V, N;
+SUB_SAT F, 1.0, R.x;
+ADD R.x, R.x, R.x;
+MAD R, R.x, N, -V;
+
+TEX R, R, texture[1], CUBE;
+TEX D, N, texture[2], CUBE;
+
+MUL Color, D, R;
+MOV Color.a, F;
+
+END

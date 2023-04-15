@@ -1,0 +1,111 @@
+!!ARBfp1.0
+
+# Phong lighting via I=Ka+Base*(Kd*Falloff*(N.L))+(Ks*Gloss*Self*(R.L)^n)
+
+# Input attributes
+
+# Texture coords
+ATTRIB Texture=fragment.texcoord[0];
+
+# Vertex coords
+ATTRIB Vertex=fragment.texcoord[1];
+
+# Tangent basis matrix (transpose)
+ATTRIB TangentX=fragment.texcoord[2];
+ATTRIB TangentY=fragment.texcoord[3];
+ATTRIB TangentZ=fragment.texcoord[4];
+
+# Output
+OUTPUT Color=result.color;
+
+# Light parameters
+PARAM Light=program.env[0];
+PARAM Kd=program.env[1];
+PARAM Ks=program.env[2];
+PARAM Ka=program.env[3];
+
+PARAM mvinvtrans[4]={ state.matrix.modelview.invtrans };
+PARAM Eye={ 0.0, 0.0, 0.0, 1.0 };
+
+PARAM Bias=program.local[0];
+
+TEMP Base, N, L, R, V, NdotL, RdotL, Falloff;
+
+TEX Base, Texture, texture[0], 2D;
+TEX N, Texture, texture[1], 2D;
+
+# Scale and bias normal to get signed
+MAD L, N, 2.0, -1.0;
+
+MOV L.z, 0.0;
+DP3 L.z, L, L;
+SUB L.z, 1.0, L.z;
+RSQ L.z, L.z;
+RCP L.z, L.z;
+
+# Transform it into object space
+DP3 N.x, TangentX, L;
+DP3 N.y, TangentY, L;
+DP3 N.z, TangentZ, L;
+
+# Renormalize it
+DP3 N.w, N, N;
+RSQ N.w, N.w;
+MUL N, N, N.w;
+
+# Light to vertex direction
+SUB L, Light, Vertex;
+
+# D = L*(1/Radius)
+# Falloff = 1-D^2
+MUL Falloff, L, Light.w;
+DP3 Falloff, Falloff, Falloff;
+SUB_SAT Falloff, 1.0, Falloff;
+
+# Normalize it
+DP3 L.w, L, L;
+RSQ L.w, L.w;
+MUL L, L, L.w;
+
+# Get view direction
+DP4 V.x, mvinvtrans[0], Eye;
+DP4 V.y, mvinvtrans[1], Eye;
+DP4 V.z, mvinvtrans[2], Eye;
+DP4 V.w, mvinvtrans[3], Eye;
+
+# View to vertex direction and normalize it
+SUB V, V, Vertex;
+DP3 V.w, V, V;
+RSQ V.w, V.w;
+MUL V, V, V.w;
+
+# Reflection = 2.0*(N.V)*N-V
+DP3 R, N, V;
+ADD R, R, R;
+MAD R, R, N, -V;
+
+# Normalize it
+DP3 R.w, R, R;
+RSQ R.w, R.w;
+MUL R, R, R.w;
+
+# Specular = Ks*Gloss*(R.L)^n
+DP3 RdotL, R, L;
+MAX RdotL, 0.0, RdotL;
+POW RdotL, RdotL.x, Ks.w;
+MUL RdotL, Base.a, RdotL;
+MUL RdotL, Ks, RdotL;
+
+# Diffuse = Ka+Kd*Falloff*(N.L)
+DP3 NdotL, N, L;
+MAX NdotL, 0.0, NdotL;
+MUL NdotL, Falloff, NdotL;
+MUL RdotL, NdotL, RdotL;
+MUL NdotL, Kd, NdotL;
+
+ADD Base, Ka, Base;
+
+# I=Ka+Base*(Kd*Falloff*Shadow*(N.L))+(Ks*Gloss*Self*(R.L)^n)
+MAD Color.rgb, Base, NdotL, RdotL;
+
+END

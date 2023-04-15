@@ -1,0 +1,36 @@
+!!ARBfp1.0
+
+OUTPUT Output=result.color;
+
+// 1/width, 1/height
+PARAM Coord=program.env[0];
+
+PARAM Exposure=program.local[0];
+
+PARAM Gamma={ 0.45, 0.45, 0.45 };
+
+TEMP TexCoord, r0, r1;
+
+// Screen space texture coords
+// with 'hack' for non-power of 2
+MUL TexCoord, fragment.position, Coord;
+
+// Original
+TEX r0, TexCoord, texture[0], 2D;
+// Bloom (blur)
+TEX r1, TexCoord, texture[1], 2D;
+
+// Mix between the original buffer
+// and the bloom buffer
+LRP r0, 0.6, r0, r1;
+
+// Tone map v*=exp2(exposure)
+EX2 r0.w, Exposure.x;
+MUL r0, r0, r0.w;
+
+// Gamma correction
+POW Output.x, r0.x, Gamma.x;
+POW Output.y, r0.y, Gamma.y;
+POW Output.z, r0.z, Gamma.z;
+
+END
